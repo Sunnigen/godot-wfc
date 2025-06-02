@@ -34,11 +34,22 @@ var cursor_position: Vector2i = Vector2i.ZERO
 # Camera control
 var camera: Camera2D
 
+# Auto-scroll system
+var auto_scroll_timer: Timer
+var auto_scroll_directions: Dictionary = {}  # Track which keys are held
+var auto_scroll_rate: float = 0.05  # 20 times per second (1/20 = 0.05)
+
 func _ready():
 	# Create camera
 	camera = Camera2D.new()
 	camera.enabled = true
 	add_child(camera)
+	
+	# Set up auto-scroll timer
+	auto_scroll_timer = Timer.new()
+	auto_scroll_timer.wait_time = auto_scroll_rate
+	auto_scroll_timer.timeout.connect(_on_auto_scroll_timeout)
+	add_child(auto_scroll_timer)
 	
 	# Set up initial scale
 	scale = Vector2(current_scale, current_scale)
@@ -283,18 +294,39 @@ func _input(event: InputEvent):
 	# Handle all cursor input
 	var old_pos = cursor_position
 	var new_pos = cursor_position
+	var is_keyboard_input = false
+	var should_update_cursor = false
 	
 	if event is InputEventKey:
+		# Handle auto-scroll key tracking
+		_handle_auto_scroll_keys(event)
+		
+		# Handle immediate key press
 		new_pos = _handle_keyboard_cursor(event)
+		is_keyboard_input = true
+		should_update_cursor = true
 	elif event is InputEventMouseMotion:
-		new_pos = _mouse_to_grid_position(event.position)
+		# Check for edge panning first
+		var camera_moved = _check_mouse_edge_panning(event.position)
+		
+		# Only update cursor if mouse is within tilemap bounds
+		if _is_mouse_in_tilemap():
+			new_pos = _mouse_to_grid_position(event.position)
+			should_update_cursor = true
+		elif camera_moved:
+			# If camera moved due to edge panning, update cursor to follow
+			new_pos = _get_cursor_for_current_camera()
+			should_update_cursor = true
 	elif event is InputEventMouseButton and event.pressed:
-		new_pos = _mouse_to_grid_position(event.position)
-		if event.double_click:
-			_on_tile_double_clicked(new_pos)
+		# Only update cursor if mouse is within tilemap bounds
+		if _is_mouse_in_tilemap():
+			new_pos = _mouse_to_grid_position(event.position)
+			should_update_cursor = true
+			if event.double_click:
+				_on_tile_double_clicked(new_pos)
 	
-	if new_pos != old_pos:
-		_update_cursor_position(new_pos)
+	if should_update_cursor and new_pos != old_pos:
+		_update_cursor_position(new_pos, is_keyboard_input)  # Camera follows only on keyboard input
 
 func _handle_keyboard_cursor(event: InputEvent) -> Vector2i:
 	"""Handle keyboard cursor movement"""
@@ -313,15 +345,27 @@ func _handle_keyboard_cursor(event: InputEvent) -> Vector2i:
 
 func _mouse_to_grid_position(mouse_pos: Vector2) -> Vector2i:
 	"""Convert mouse position to grid coordinates"""
-	# Convert screen coordinates to local coordinates within this Node2D
-	var local_pos = get_local_mouse_position()
+	if not camera:
+		return Vector2i.ZERO
+		
+	var viewport = get_viewport()
+	if not viewport:
+		return Vector2i.ZERO
 	
-	# Account for current scale
-	local_pos = local_pos / current_scale
+	# Get viewport size and mouse position relative to viewport
+	var viewport_size = viewport.get_visible_rect().size
+	var mouse_viewport_pos = mouse_pos
 	
-	# Convert to grid coordinates
-	var grid_x = int(local_pos.x / display_size)
-	var grid_y = int(local_pos.y / display_size)
+	# Convert viewport mouse position to world coordinates
+	# Account for camera position and current scale
+	var viewport_center = viewport_size / 2
+	var mouse_offset_from_center = mouse_viewport_pos - viewport_center
+	var world_offset = mouse_offset_from_center / current_scale
+	var world_pos = camera.position + world_offset
+	
+	# Convert world coordinates to grid coordinates
+	var grid_x = int(world_pos.x / display_size)
+	var grid_y = int(world_pos.y / display_size)
 	
 	# Clamp to valid range
 	grid_x = clamp(grid_x, 0, map_width - 1)
@@ -329,13 +373,40 @@ func _mouse_to_grid_position(mouse_pos: Vector2) -> Vector2i:
 	
 	return Vector2i(grid_x, grid_y)
 
-func _update_cursor_position(new_pos: Vector2i):
+func _is_mouse_in_tilemap() -> bool:
+	"""Check if mouse is within the tilemap bounds"""
+	if not camera:
+		return false
+		
+	var viewport = get_viewport()
+	if not viewport:
+		return false
+	
+	# Get mouse position in screen coordinates
+	var mouse_pos = viewport.get_mouse_position()
+	
+	# Convert to world coordinates using the same method as _mouse_to_grid_position
+	var viewport_size = viewport.get_visible_rect().size
+	var viewport_center = viewport_size / 2
+	var mouse_offset_from_center = mouse_pos - viewport_center
+	var world_offset = mouse_offset_from_center / current_scale
+	var world_pos = camera.position + world_offset
+	
+	# Check if within tilemap bounds in world coordinates
+	var map_size_pixels = Vector2(map_width * display_size, map_height * display_size)
+	return world_pos.x >= 0 and world_pos.x < map_size_pixels.x and world_pos.y >= 0 and world_pos.y < map_size_pixels.y
+
+func _update_cursor_position(new_pos: Vector2i, move_camera: bool = false):
 	"""Update cursor position - single source of truth"""
 	cursor_position = new_pos
 	
 	# Update visual cursor
 	if map_cursor:
 		map_cursor.move_to(cursor_position)
+	
+	# Phase 1: Simple camera following - only on keyboard input
+	if move_camera:
+		_update_camera_simple()
 	
 	# Update UI info
 	_update_cursor_info()
@@ -356,3 +427,176 @@ func _update_cursor_info():
 		probabilities_changed.emit(probabilities)
 	else:
 		current_tile_changed.emit("Position: (%d, %d) | WFC not initialized" % [cursor_position.x, cursor_position.y])
+
+# Phase 1: Edge-Based Camera Following
+
+func _update_camera_simple():
+	"""Phase 1: Move camera only when cursor is at edge of visible area"""
+	if not camera:
+		return
+	
+	# Get current viewport size and calculate visible area
+	var viewport = get_viewport()
+	if not viewport:
+		return
+		
+	var viewport_size = viewport.get_visible_rect().size
+	var visible_area_world = viewport_size / current_scale
+	
+	# Calculate current camera bounds in world coordinates
+	var camera_top_left = camera.position - visible_area_world / 2
+	var camera_bottom_right = camera.position + visible_area_world / 2
+	
+	# Convert cursor to world coordinates (center of tile)
+	var cursor_world = Vector2(cursor_position) * display_size + Vector2(display_size/2, display_size/2)
+	
+	# Check if cursor is near edges and calculate needed camera adjustment
+	var camera_offset = Vector2.ZERO
+	var edge_margin = display_size * 2  # 2 tiles from edge
+	
+	# Check each edge
+	if cursor_world.x < camera_top_left.x + edge_margin:
+		# Cursor near left edge
+		camera_offset.x = cursor_world.x - edge_margin - camera_top_left.x
+	elif cursor_world.x > camera_bottom_right.x - edge_margin:
+		# Cursor near right edge
+		camera_offset.x = cursor_world.x + edge_margin - camera_bottom_right.x
+		
+	if cursor_world.y < camera_top_left.y + edge_margin:
+		# Cursor near top edge
+		camera_offset.y = cursor_world.y - edge_margin - camera_top_left.y
+	elif cursor_world.y > camera_bottom_right.y - edge_margin:
+		# Cursor near bottom edge
+		camera_offset.y = cursor_world.y + edge_margin - camera_bottom_right.y
+	
+	# Only move camera if there's an offset needed
+	if camera_offset != Vector2.ZERO:
+		camera.position += camera_offset
+
+func _check_mouse_edge_panning(mouse_screen_pos: Vector2) -> bool:
+	"""Check if mouse is at screen edge and pan camera accordingly"""
+	if not camera:
+		return false
+		
+	var viewport = get_viewport()
+	if not viewport:
+		return false
+		
+	var viewport_size = viewport.get_visible_rect().size
+	var edge_threshold = 50  # pixels from screen edge to trigger panning
+	var pan_speed = 5.0  # pixels per frame to pan
+	
+	var camera_offset = Vector2.ZERO
+	
+	# Check screen edges (not tilemap edges)
+	if mouse_screen_pos.x < edge_threshold:
+		# Mouse near left edge of screen
+		camera_offset.x = -pan_speed
+	elif mouse_screen_pos.x > viewport_size.x - edge_threshold:
+		# Mouse near right edge of screen  
+		camera_offset.x = pan_speed
+		
+	if mouse_screen_pos.y < edge_threshold:
+		# Mouse near top edge of screen
+		camera_offset.y = -pan_speed
+	elif mouse_screen_pos.y > viewport_size.y - edge_threshold:
+		# Mouse near bottom edge of screen
+		camera_offset.y = pan_speed
+	
+	# Apply panning if needed
+	if camera_offset != Vector2.ZERO:
+		# Adjust for current scale
+		camera_offset = camera_offset / current_scale
+		camera.position += camera_offset
+		return true
+		
+	return false
+
+func _get_cursor_for_current_camera() -> Vector2i:
+	"""Get appropriate cursor position for current camera center"""
+	var viewport = get_viewport()
+	if not viewport:
+		return cursor_position
+		
+	# Get camera center in world coordinates
+	var camera_center = camera.position
+	
+	# Convert to grid coordinates
+	var grid_pos = camera_center / display_size
+	var cursor_grid = Vector2i(int(grid_pos.x), int(grid_pos.y))
+	
+	# Clamp to map bounds
+	cursor_grid.x = clamp(cursor_grid.x, 0, map_width - 1)
+	cursor_grid.y = clamp(cursor_grid.y, 0, map_height - 1)
+	
+	return cursor_grid
+
+# Auto-scroll System
+
+func _handle_auto_scroll_keys(event: InputEvent):
+	"""Track which cursor keys are currently held down"""
+	if event is InputEventKey:
+		var action_name = ""
+		
+		# Map keyboard events to direction names
+		if event.is_action("cursor_up"):
+			action_name = "up"
+		elif event.is_action("cursor_down"):
+			action_name = "down"
+		elif event.is_action("cursor_left"):
+			action_name = "left"
+		elif event.is_action("cursor_right"):
+			action_name = "right"
+		
+		if action_name != "":
+			if event.pressed:
+				# Key pressed - start tracking
+				auto_scroll_directions[action_name] = true
+				_update_auto_scroll_timer()
+			else:
+				# Key released - stop tracking
+				auto_scroll_directions.erase(action_name)
+				_update_auto_scroll_timer()
+
+func _update_auto_scroll_timer():
+	"""Start or stop the auto-scroll timer based on held keys"""
+	if auto_scroll_timer == null:
+		return
+	
+	if auto_scroll_directions.size() > 0:
+		# Keys are held - start timer if not already running
+		if auto_scroll_timer.is_stopped():
+			auto_scroll_timer.start()
+	else:
+		# No keys held - stop timer
+		auto_scroll_timer.stop()
+
+func _on_auto_scroll_timeout():
+	"""Called every 0.05 seconds while keys are held to auto-move cursor"""
+	if auto_scroll_directions.size() == 0:
+		auto_scroll_timer.stop()
+		return
+	
+	# Calculate movement based on held keys
+	var movement = Vector2i.ZERO
+	
+	if auto_scroll_directions.has("up"):
+		movement.y -= 1
+	if auto_scroll_directions.has("down"):
+		movement.y += 1
+	if auto_scroll_directions.has("left"):
+		movement.x -= 1
+	if auto_scroll_directions.has("right"):
+		movement.x += 1
+	
+	# Apply movement
+	if movement != Vector2i.ZERO:
+		var new_pos = cursor_position + movement
+		
+		# Clamp to map bounds
+		new_pos.x = clamp(new_pos.x, 0, map_width - 1)
+		new_pos.y = clamp(new_pos.y, 0, map_height - 1)
+		
+		# Update cursor with camera following
+		if new_pos != cursor_position:
+			_update_cursor_position(new_pos, true)  # true for camera following

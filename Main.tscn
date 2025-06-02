@@ -13,6 +13,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme = ExtResource("5_theme")
 script = ExtResource("1_1234")
 
@@ -166,6 +168,7 @@ ok_button_text = "Open"
 file_mode = 0
 
 [node name="TileProbabilityDialog" parent="." instance=ExtResource("6_prob")]
+size = Vector2i(400, 381)
 
 [node name="TileMatchesDialog" parent="." instance=ExtResource("7_matches")]
 visible = false
