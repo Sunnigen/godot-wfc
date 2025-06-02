@@ -230,9 +230,18 @@ func print_stats():
 		print("  Undecided positions: ", stats.undecided_positions)
 		print("  Completion: %.1f%%" % stats.completion_percentage)
 		print("  Lowest entropy: ", stats.lowest_entropy)
+		print("  Propagation waves: ", stats.propagation_waves)
+		print("  Entropy calculations: ", stats.entropy_calculations)
 	
 	if tileset_data:
 		print("Tileset: %d tiles loaded" % tileset_data.get_non_blank_tile_ids().size())
+	
+	# Phase 1 Testing
+	if wfc:
+		print("\n=== TESTING PHASE 1 BIT OPERATIONS ===")
+		wfc.test_bit_operations()
+		wfc.verify_bit_consistency()
+		print("=== PHASE 1 TESTING COMPLETE ===\n")
 
 # WFC Signal Handlers
 func _on_tile_placed(position: Vector2i, tile_id: int):
@@ -306,16 +315,13 @@ func _input(event: InputEvent):
 		is_keyboard_input = true
 		should_update_cursor = true
 	elif event is InputEventMouseMotion:
-		# Check for edge panning first
-		var camera_moved = _check_mouse_edge_panning(event.position)
-		
-		# Only update cursor if mouse is within tilemap bounds
+		# Only process mouse movement if within tilemap bounds
 		if _is_mouse_in_tilemap():
+			# Check for edge panning (will only pan if mouse is in tilemap)
+			_check_mouse_edge_panning(event.position)
+			
+			# Update cursor position
 			new_pos = _mouse_to_grid_position(event.position)
-			should_update_cursor = true
-		elif camera_moved:
-			# If camera moved due to edge panning, update cursor to follow
-			new_pos = _get_cursor_for_current_camera()
 			should_update_cursor = true
 	elif event is InputEventMouseButton and event.pressed:
 		# Only update cursor if mouse is within tilemap bounds
@@ -480,6 +486,11 @@ func _check_mouse_edge_panning(mouse_screen_pos: Vector2) -> bool:
 		
 	var viewport = get_viewport()
 	if not viewport:
+		return false
+	
+	# First check if mouse is even within the tilemap bounds
+	# This prevents panning when mouse is in empty viewport space
+	if not _is_mouse_in_tilemap():
 		return false
 		
 	var viewport_size = viewport.get_visible_rect().size
