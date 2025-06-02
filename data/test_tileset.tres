@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TilesetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/wfc/core/TilesetData.gd" id="1_tileset"]
+
+[resource]
+script = ExtResource("1_tileset")
+tile_size = 16

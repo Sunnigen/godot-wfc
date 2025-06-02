@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3 uid="uid://cxr8k5p7mxnqw"]
+
+[ext_resource type="Script" path="res://addons/wfc/ui/TileMatchesDialog.gd" id="1_matches"]
+
+[node name="TileMatchesDialog" type="Window"]
+title = "Tile Matches"
+size = Vector2i(600, 500)
+script = ExtResource("1_matches")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+
+[node name="MainTileContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="TilePreview" type="TextureRect" parent="VBox/MainTileContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="TileLabel" type="Label" parent="VBox/MainTileContainer"]
+layout_mode = 2
+text = "Tile 0"
+
+[node name="Spacer" type="Control" parent="VBox/MainTileContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TileSelector" type="OptionButton" parent="VBox/MainTileContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MatchesContainer" type="VBoxContainer" parent="VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3

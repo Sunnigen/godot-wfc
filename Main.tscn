@@ -1,0 +1,182 @@
+[gd_scene load_steps=8 format=3 uid="uid://bkfhdj8cqx6wm"]
+
+[ext_resource type="Script" path="res://Main.gd" id="1_1234"]
+[ext_resource type="Script" path="res://addons/wfc/ui/MapDisplay.gd" id="2_5678"]
+[ext_resource type="Script" path="res://addons/wfc/ui/ProbabilityPalette.gd" id="3_9012"]
+[ext_resource type="Script" path="res://addons/wfc/ui/MapCursor.gd" id="4_3456"]
+[ext_resource type="Theme" uid="uid://b8rwyif6kb5y0" path="res://theme/wfc_theme.tres" id="5_theme"]
+[ext_resource type="PackedScene" uid="uid://btq7h5p8nxvmq" path="res://addons/wfc/ui/TileProbabilityDialog.tscn" id="6_prob"]
+[ext_resource type="PackedScene" uid="uid://cxr8k5p7mxnqw" path="res://addons/wfc/ui/TileMatchesDialog.tscn" id="7_matches"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource("5_theme")
+script = ExtResource("1_1234")
+
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 3.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = 1000
+
+[node name="MapSection" type="VBoxContainer" parent="HSplitContainer"]
+layout_mode = 2
+
+[node name="TopBar" type="HBoxContainer" parent="HSplitContainer/MapSection"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="GenerationToggle" type="CheckBox" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Continuous (Space)"
+
+[node name="GenerateOne" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "1 Tile"
+
+[node name="GenerateFive" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "5 Tiles"
+
+[node name="Spacer" type="Control" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MapSize" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Map Size"
+
+[node name="ToggleBorder" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Toggle Border"
+
+[node name="LoadTileset" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Load Tileset"
+
+[node name="ResetMap" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Reset Map"
+
+[node name="PrintStats" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Print Stats"
+
+[node name="ViewportContainer" type="SubViewportContainer" parent="HSplitContainer/MapSection"]
+layout_mode = 2
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/MapSection/ViewportContainer"]
+handle_input_locally = false
+size = Vector2i(986, 584)
+render_target_update_mode = 4
+
+[node name="MapDisplay" type="Node2D" parent="HSplitContainer/MapSection/ViewportContainer/SubViewport"]
+script = ExtResource("2_5678")
+
+[node name="MapCursor" type="Node2D" parent="HSplitContainer/MapSection/ViewportContainer/SubViewport/MapDisplay"]
+script = ExtResource("4_3456")
+
+[node name="BottomBar" type="HBoxContainer" parent="HSplitContainer/MapSection"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="StatsLabel" type="Label" parent="HSplitContainer/MapSection/BottomBar"]
+layout_mode = 2
+text = "Lowest Entropy|(999, 999): 999"
+
+[node name="CurrentTileLabel" type="Label" parent="HSplitContainer/MapSection/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "N/A"
+
+[node name="ProbabilityPalette" type="ScrollContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+script = ExtResource("3_9012")
+
+[node name="Content" type="VBoxContainer" parent="HSplitContainer/ProbabilityPalette"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Header" type="HBoxContainer" parent="HSplitContainer/ProbabilityPalette/Content"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HSplitContainer/ProbabilityPalette/Content/Header"]
+layout_mode = 2
+text = "Tile Probabilities"
+
+[node name="CloseButton" type="Button" parent="HSplitContainer/ProbabilityPalette/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "X"
+
+[node name="TileList" type="VBoxContainer" parent="HSplitContainer/ProbabilityPalette/Content"]
+layout_mode = 2
+
+[node name="MapSizeDialog" type="AcceptDialog" parent="."]
+title = "Modify Map Size"
+size = Vector2i(300, 150)
+
+[node name="VBox" type="VBoxContainer" parent="MapSizeDialog"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -40.0
+
+[node name="GridContainer" type="GridContainer" parent="MapSizeDialog/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="WidthLabel" type="Label" parent="MapSizeDialog/VBox/GridContainer"]
+layout_mode = 2
+text = "Width:"
+
+[node name="WidthInput" type="SpinBox" parent="MapSizeDialog/VBox/GridContainer"]
+layout_mode = 2
+min_value = 5.0
+value = 14.0
+
+[node name="HeightLabel" type="Label" parent="MapSizeDialog/VBox/GridContainer"]
+layout_mode = 2
+text = "Height:"
+
+[node name="HeightInput" type="SpinBox" parent="MapSizeDialog/VBox/GridContainer"]
+layout_mode = 2
+min_value = 5.0
+value = 14.0
+
+[node name="TilesetDialog" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(800, 600)
+ok_button_text = "Open"
+file_mode = 0
+
+[node name="TileProbabilityDialog" parent="." instance=ExtResource("6_prob")]
+
+[node name="TileMatchesDialog" parent="." instance=ExtResource("7_matches")]
+visible = false
+
+[connection signal="toggled" from="HSplitContainer/MapSection/TopBar/GenerationToggle" to="." method="_on_generation_toggled"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/GenerateOne" to="." method="_on_generate_one_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/GenerateFive" to="." method="_on_generate_five_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/MapSize" to="." method="_on_map_size_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/ToggleBorder" to="." method="_on_toggle_border_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/LoadTileset" to="." method="_on_load_tileset_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/ResetMap" to="." method="_on_reset_map_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/PrintStats" to="." method="_on_print_stats_pressed"]
+[connection signal="pressed" from="HSplitContainer/ProbabilityPalette/Content/Header/CloseButton" to="HSplitContainer/ProbabilityPalette" method="hide"]
+[connection signal="confirmed" from="MapSizeDialog" to="." method="_on_map_size_confirmed"]

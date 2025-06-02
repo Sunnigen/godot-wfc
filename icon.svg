@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#2D2D30"/>
+  <g transform="translate(16, 16)">
+    <!-- Grid pattern -->
+    <rect x="0" y="0" width="30" height="30" fill="#4A90E2"/>
+    <rect x="33" y="0" width="30" height="30" fill="#7B68EE"/>
+    <rect x="66" y="0" width="30" height="30" fill="#4A90E2"/>
+    <rect x="0" y="33" width="30" height="30" fill="#7B68EE"/>
+    <rect x="33" y="33" width="30" height="30" fill="#4A90E2"/>
+    <rect x="66" y="33" width="30" height="30" fill="#7B68EE"/>
+    <rect x="0" y="66" width="30" height="30" fill="#4A90E2"/>
+    <rect x="33" y="66" width="30" height="30" fill="#7B68EE"/>
+    <rect x="66" y="66" width="30" height="30" fill="#4A90E2"/>
+  </g>
+  <text x="64" y="116" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#FFFFFF">WFC</text>
+</svg>

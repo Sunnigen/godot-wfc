@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3 uid="uid://btq7h5p8nxvmq"]
+
+[ext_resource type="Script" path="res://addons/wfc/ui/TileProbabilityDialog.gd" id="1_dialog"]
+
+[node name="TileProbabilityDialog" type="AcceptDialog"]
+title = "Modify Tile Probabilities"
+size = Vector2i(400, 300)
+script = ExtResource("1_dialog")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="TilePreview" type="TextureRect" parent="VBox/Header"]
+layout_mode = 2
+custom_minimum_size = Vector2(32, 32)
+stretch_mode = 5
+
+[node name="TileLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+text = "Tile 0"
+
+[node name="HSeparator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="DirectionLabels" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Set probability weights for each direction:"
+autowrap_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="NorthLabel" type="Label" parent="VBox/GridContainer"]
+layout_mode = 2
+text = "North:"
+
+[node name="NorthInput" type="SpinBox" parent="VBox/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EastLabel" type="Label" parent="VBox/GridContainer"]
+layout_mode = 2
+text = "East:"
+
+[node name="EastInput" type="SpinBox" parent="VBox/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SouthLabel" type="Label" parent="VBox/GridContainer"]
+layout_mode = 2
+text = "South:"
+
+[node name="SouthInput" type="SpinBox" parent="VBox/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WestLabel" type="Label" parent="VBox/GridContainer"]
+layout_mode = 2
+text = "West:"
+
+[node name="WestInput" type="SpinBox" parent="VBox/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ButtonContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="VBox/ButtonContainer"]
+layout_mode = 2
+text = "Reset"
+
+[node name="HalveButton" type="Button" parent="VBox/ButtonContainer"]
+layout_mode = 2
+text = "Halve"
+
+[node name="DoubleButton" type="Button" parent="VBox/ButtonContainer"]
+layout_mode = 2
+text = "Double"
+
+[connection signal="pressed" from="VBox/ButtonContainer/ResetButton" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="VBox/ButtonContainer/HalveButton" to="." method="_on_halve_pressed"]
+[connection signal="pressed" from="VBox/ButtonContainer/DoubleButton" to="." method="_on_double_pressed"]
