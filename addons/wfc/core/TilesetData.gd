@@ -109,9 +109,9 @@ func get_opposite_direction(direction: Direction) -> Direction:
 		_: return Direction.SOUTH
 
 func _create_blank_texture() -> ImageTexture:
-	"""Create a white texture for blank tiles"""
-	var image = Image.create(tile_size, tile_size, false, Image.FORMAT_RGB8)
-	image.fill(Color.WHITE)
+	"""Create a transparent texture for blank tiles"""
+	var image = Image.create(tile_size, tile_size, false, Image.FORMAT_RGBA8)
+	image.fill(Color.TRANSPARENT)
 	
 	var texture = ImageTexture.create_from_image(image)
 	return texture
