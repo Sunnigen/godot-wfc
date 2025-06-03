@@ -78,8 +78,12 @@ func initialize(width: int, height: int, tile_sz: int, tileset: String):
 
 func _initialize_wfc():
 	"""Initialize the WFC algorithm with test tileset"""
+	print("DEBUG: _initialize_wfc() called")
+	
 	# Create test tileset
 	tileset_data = TilesetData.create_test_tileset()
+	print("DEBUG: Created test tileset with %d tiles" % tileset_data.get_non_blank_tile_ids().size())
+	print("DEBUG: Test tileset tile IDs: %s" % str(tileset_data.tile_textures.keys()))
 	
 	# Create WFC instance
 	wfc = WFC.new()
@@ -90,8 +94,10 @@ func _initialize_wfc():
 		wfc.contradiction_found.connect(_on_contradiction_found)
 		wfc.entropy_updated.connect(_on_entropy_updated)
 		
+		print("DEBUG: WFC initialized successfully")
 		stats_updated.emit("WFC initialized with test tileset")
 	else:
+		print("DEBUG: WFC initialization failed")
 		stats_updated.emit("Failed to initialize WFC")
 
 func _initialize_cursor():
@@ -103,28 +109,29 @@ func _initialize_cursor():
 	_update_cursor_info()
 
 func _create_visual_grid():
-	# Clear existing sprites
-	for child in get_children():
-		if child is Sprite2D:
-			child.queue_free()
-	
-	# Initialize 2D tile_sprites array
+	print("DEBUG: After cleanup, children count: %d" % get_child_count())
 	tile_sprites.clear()
 	for y in range(map_height):
 		tile_sprites.append([])  # Create row array first
 	
 	# Create sprite for each tile position
+	var created_sprites = 0
 	for y in range(map_height):
 		for x in range(map_width):
 			var sprite = Sprite2D.new()
 			sprite.position = Vector2(x * display_size + display_size/2, y * display_size + display_size/2)
 			sprite.scale = Vector2(float(display_size) / tile_size, float(display_size) / tile_size)
+			
+			# Set texture filter to nearest for pixel-perfect rendering
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			
 			add_child(sprite)
 			tile_sprites[y].append(sprite)  # Append to the row array
+			created_sprites += 1
 			
 			# Add border if enabled
-			if show_borders:
-				_add_border_to_sprite(sprite)
+			#if show_borders:	
+				#_add_border_to_sprite(sprite)
 
 func _add_border_to_sprite(sprite: Sprite2D):
 	var border = ReferenceRect.new()
@@ -134,11 +141,65 @@ func _add_border_to_sprite(sprite: Sprite2D):
 	border.border_width = 1
 	sprite.add_child(border)
 
+func _calculate_display_size(tile_sz: int) -> int:
+	"""Calculate appropriate display size based on tile size for visibility"""
+	if tile_sz <= 4:
+		return 24  # Very small tiles (3x3, 4x4) need significant scaling
+	elif tile_sz <= 8:
+		return tile_sz * 3  # Small tiles (5x5 to 8x8) need moderate scaling
+	elif tile_sz <= 16:
+		return tile_sz * 2  # Medium tiles need slight scaling
+	else:
+		return tile_sz  # Large tiles display at actual size
+
 func load_tileset(path: String):
 	current_tileset = path
-	# TODO: Load actual tileset data
 	print("Loading tileset: ", path)
-	stats_updated.emit("Tileset loaded: " + path.get_file())
+	
+	# Check file extension
+	if path.ends_with(".tres"):
+		# Load Godot tileset resource
+		var loaded_tileset = load(path) as TilesetData
+		if loaded_tileset:
+			tileset_data = loaded_tileset
+			tile_size = tileset_data.tile_size  # Update tile size from loaded tileset
+			
+			# Calculate appropriate display size based on tile size
+			display_size = _calculate_display_size(tile_size)
+			
+			# Recreate visual grid with new display size
+			_create_visual_grid()
+			
+			# Update cursor with new display size
+			if map_cursor:
+				map_cursor.initialize(map_width, map_height, display_size)
+				map_cursor.move_to(cursor_position)
+			
+			# Center camera on map with new display size
+			camera.position = Vector2(map_width * display_size / 2, map_height * display_size / 2)
+			
+			# Reinitialize WFC with new tileset
+			wfc = WFC.new()
+			if wfc.initialize(map_width, map_height, tileset_data):
+				# Connect WFC signals
+				wfc.tile_placed.connect(_on_tile_placed)
+				wfc.generation_complete.connect(_on_generation_complete)
+				wfc.contradiction_found.connect(_on_contradiction_found)
+				wfc.entropy_updated.connect(_on_entropy_updated)
+				
+				# Reset the map
+				reset_map()
+				
+				stats_updated.emit("Loaded tileset: " + path.get_file() + " (%d tiles)" % tileset_data.get_non_blank_tile_ids().size())
+			else:
+				stats_updated.emit("Failed to initialize WFC with tileset")
+		else:
+			stats_updated.emit("Failed to load tileset: " + path)
+	elif path.ends_with(".pickle"):
+		# TODO: Load Python pickle tileset
+		stats_updated.emit("Pickle tilesets not yet supported")
+	else:
+		stats_updated.emit("Unsupported tileset format: " + path.get_extension())
 
 func generate_tiles(count: int):
 	if not wfc:
@@ -236,16 +297,79 @@ func print_stats():
 	if tileset_data:
 		print("Tileset: %d tiles loaded" % tileset_data.get_non_blank_tile_ids().size())
 	
-	# Phase 1 Testing
+	# Print entropy map
 	if wfc:
-		print("\n=== TESTING PHASE 1 BIT OPERATIONS ===")
-		wfc.test_bit_operations()
-		wfc.verify_bit_consistency()
-		print("=== PHASE 1 TESTING COMPLETE ===\n")
+		print("\n=== ENTROPY MAP ===")
+		print("(# = placed, . = max entropy, numbers = entropy value)")
+		for y in range(map_height):
+			var row_str = ""
+			for x in range(map_width):
+				var pos = Vector2i(x, y)
+				var tile_id = wfc.get_tile_at(pos)
+				if tile_id != 0:
+					row_str += "# "  # Placed tile
+				else:
+					var entropy = wfc.get_entropy_at(pos)
+					if entropy >= 10:
+						row_str += ". "  # High entropy (10+)
+					elif entropy == 0:
+						row_str += "X "  # Contradiction!
+					else:
+						row_str += str(entropy) + " "  # Show actual value
+			print(row_str)
+		
+		# DEBUG: Print actual tile IDs to see what WFC thinks is placed
+		print("\n=== ACTUAL TILE ID MAP ===")
+		print("(0 = blank/undecided)")
+		for y in range(map_height):
+			var row_str = ""
+			for x in range(map_width):
+				var pos = Vector2i(x, y)
+				var tile_id = wfc.get_tile_at(pos)
+				if tile_id < 10:
+					row_str += str(tile_id) + "  "
+				else:
+					row_str += str(tile_id) + " "
+			print(row_str)
+		
+		# Print entropy distribution
+		print("\n=== ENTROPY DISTRIBUTION ===")
+		var entropy_counts = {}
+		var min_entropy = 999
+		var max_entropy = 0
+		
+		for y in range(map_height):
+			for x in range(map_width):
+				var pos = Vector2i(x, y)
+				var tile_id = wfc.get_tile_at(pos)
+				if tile_id == 0:  # Only count undecided positions
+					var entropy = wfc.get_entropy_at(pos)
+					if not entropy_counts.has(entropy):
+						entropy_counts[entropy] = 0
+					entropy_counts[entropy] += 1
+					min_entropy = min(min_entropy, entropy)
+					max_entropy = max(max_entropy, entropy)
+		
+		# Sort and display
+		var sorted_entropies = entropy_counts.keys()
+		sorted_entropies.sort()
+		for entropy in sorted_entropies:
+			print("  Entropy %d: %d positions" % [entropy, entropy_counts[entropy]])
+		
+		if sorted_entropies.size() > 0:
+			print("  Range: %d to %d" % [min_entropy, max_entropy])
+	
+	# Phase 1 Testing
+	#if wfc:
+		#print("\n=== TESTING PHASE 1 BIT OPERATIONS ===")
+		#wfc.test_bit_operations()
+		#wfc.verify_bit_consistency()
+		#print("=== PHASE 1 TESTING COMPLETE ===\n")
 
 # WFC Signal Handlers
 func _on_tile_placed(position: Vector2i, tile_id: int):
 	"""Called when WFC places a tile"""
+	print("SIGNAL: tile_placed at (%d,%d) with tile_id=%d" % [position.x, position.y, tile_id])
 	_update_tile_visual(position.x, position.y)
 
 func _on_generation_complete():
@@ -275,8 +399,12 @@ func _update_tile_visual(x: int, y: int):
 	var tile_id = wfc.get_tile_at(Vector2i(x, y))
 	var sprite = tile_sprites[y][x]
 	
-	if sprite and tile_id in tileset_data.tile_textures:
-		sprite.texture = tileset_data.tile_textures[tile_id]
+	if tile_id != 0 and sprite and tileset_data and tile_id in tileset_data.tile_textures:
+		var texture = tileset_data.tile_textures[tile_id]
+		sprite.texture = texture
+	elif tile_id == 0:
+		sprite.texture = null
+	queue_redraw()
 
 func _update_stats_display():
 	"""Update the stats display with current WFC information"""
@@ -289,6 +417,21 @@ func _update_all_tiles():
 	for y in range(map_height):
 		for x in range(map_width):
 			_update_tile_visual(x, y)
+
+func force_visual_refresh():
+	"""Force a complete visual refresh - call this manually to test"""
+	print("FORCING COMPLETE VISUAL REFRESH...")
+	
+	# Force redraw of entire scene
+	queue_redraw()
+	
+	# Update all tiles
+	_update_all_tiles()
+	
+	# Force scene tree updates
+	get_tree().call_group("sprites", "queue_redraw")
+	
+	print("Visual refresh complete")
 
 # Consolidated Input Handling
 func _input(event: InputEvent):
