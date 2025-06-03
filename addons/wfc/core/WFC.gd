@@ -29,7 +29,7 @@ var entropy_dirty: PackedByteArray = []   # 1 = needs recalc, 0 = clean
 var entropy_calculations: int = 0         # Track performance improvement
 
 # Memory optimization: Bit-based possibility storage
-var possibility_array: PackedInt32Array = []  # Bit flags for tile possibilities per position
+var possibility_array: PackedInt64Array = []  # Bit flags for tile possibilities per position (64-bit for more tiles)
 # TODO FUTURE: Add weighted probability system on top of bit arrays
 # This will require additional data structure to store weights for positions that need them
 
@@ -39,6 +39,10 @@ func initialize(width: int, height: int, tileset: TilesetData):
 	map_height = height
 	tileset_data = tileset
 	
+	print("\n=== WFC INITIALIZATION DEBUG ===")
+	print("Map size: %dx%d" % [width, height])
+	print("Available tiles: ", tileset_data.get_non_blank_tile_ids())
+	
 	if not tileset_data.validate():
 		push_error("WFC: Invalid tileset data provided")
 		return false
@@ -47,6 +51,7 @@ func initialize(width: int, height: int, tileset: TilesetData):
 	_reset_state()
 	
 	print("WFC initialized: %dx%d map with %d tiles" % [width, height, tileset_data.get_non_blank_tile_ids().size()])
+	print("=== END INITIALIZATION DEBUG ===\n")
 	return true
 
 func _create_arrays():
@@ -55,6 +60,9 @@ func _create_arrays():
 	probability_array.clear()
 	undecided_positions.clear()
 	
+	# Get all non-blank tiles
+	var available_tiles = tileset_data.get_non_blank_tile_ids()
+	
 	# Create 2D arrays
 	for y in range(map_height):
 		var tile_row = []
@@ -62,20 +70,20 @@ func _create_arrays():
 		
 		for x in range(map_width):
 			tile_row.append(0)  # 0 = undecided
-			prob_row.append({})  # Empty probability dict
+			
+			# Initialize with all tiles possible at each position
+			var probs = {}
+			for tile_id in available_tiles:
+				probs[tile_id] = 1.0  # Equal probability for all tiles initially
+			prob_row.append(probs)
+			
 			undecided_positions.append(Vector2i(x, y))
 		
 		tile_array.append(tile_row)
 		probability_array.append(prob_row)
 	
-	# Initialize probabilities - all non-blank tiles possible everywhere
-	var all_tiles = {}
-	for tile_id in tileset_data.get_non_blank_tile_ids():
-		all_tiles[tile_id] = 1.0
-	
-	for y in range(map_height):
-		for x in range(map_width):
-			probability_array[y][x] = all_tiles.duplicate()
+	print("DEBUG: Created arrays - Sample position (0,0) has %d possible tiles" % probability_array[0][0].size())
+	print("DEBUG: Possible tiles at (0,0): ", probability_array[0][0].keys())
 	
 	# Initialize possibility array first
 	_initialize_possibility_array()
@@ -98,6 +106,9 @@ func find_lowest_entropy() -> Vector2i:
 	# Update only positions that changed
 	_update_dirty_entropies()
 	
+	print("\nDEBUG: Finding lowest entropy...")
+	print("DEBUG: Undecided positions count: %d" % undecided_positions.size())
+	
 	var best_pos = Vector2i(-1, -1)
 	var best_entropy = 999
 	
@@ -107,6 +118,17 @@ func find_lowest_entropy() -> Vector2i:
 		if entropy > 0 and entropy < best_entropy:
 			best_entropy = entropy
 			best_pos = pos
+	
+	if best_pos == Vector2i(-1, -1):
+		print("DEBUG: No valid position found! Best entropy was: %d" % best_entropy)
+		print("DEBUG: Checked %d positions" % undecided_positions.size())
+		# Let's check a sample position
+		if undecided_positions.size() > 0:
+			var sample_pos = undecided_positions[0]
+			print("DEBUG: Sample undecided position %s has entropy: %d" % [sample_pos, get_entropy_at(sample_pos)])
+			print("DEBUG: Possible tiles at sample: ", _get_possible_tiles(sample_pos))
+	else:
+		print("DEBUG: Found best position %s with entropy %d" % [best_pos, best_entropy])
 	
 	lowest_entropy = [best_pos, best_entropy]
 	entropy_updated.emit(best_pos, best_entropy)
@@ -118,6 +140,7 @@ func generate_step() -> bool:
 	Returns true if step succeeded, false if contradiction or complete
 	"""
 	attempts += 1
+	
 	
 	# Check if generation is complete
 	if undecided_positions.size() == 0:
@@ -157,6 +180,7 @@ func place_tile(pos: Vector2i, tile_id: int):
 	tile_array[pos.y][pos.x] = tile_id
 	probability_array[pos.y][pos.x] = {}  # Clear probabilities
 	_clear_all_possibilities(pos)  # Clear bit array to match Dictionary
+	_mark_entropy_dirty(pos)  # CRITICAL: Update entropy cache for placed tile
 	undecided_positions.erase(pos)
 	completed_tiles += 1
 	
@@ -303,11 +327,18 @@ func _initialize_possibility_array():
 	var total_positions = map_width * map_height
 	possibility_array.resize(total_positions)
 	
-	# Initialize all positions to 0 first
+	# Create bitmask with all tiles possible (using 64-bit integers)
+	var all_tiles_mask = 0
+	for tile_id in tileset_data.get_non_blank_tile_ids():
+		all_tiles_mask |= (1 << tile_id)
+	
+	# Initialize all positions with all tiles possible
 	for i in range(total_positions):
-		possibility_array[i] = 0
+		possibility_array[i] = all_tiles_mask
 	
 	print("WFC: Initialized possibility array with %d positions" % total_positions)
+	print("DEBUG: All tiles bitmask = %d" % all_tiles_mask)
+	print("DEBUG: Sample possibility at index 0 = %d" % possibility_array[0])
 	
 	# Get all non-blank tile IDs
 	var all_tile_ids = tileset_data.get_non_blank_tile_ids()
@@ -421,6 +452,10 @@ func _get_possible_tiles(pos: Vector2i) -> Array[int]:
 func _get_possibility_count(pos: Vector2i) -> int:
 	"""Get number of possible tiles at position (for entropy calculation)"""
 	if not _is_valid_position(pos):
+		return 0
+	
+	# CRITICAL: If tile is already placed, entropy is 0
+	if tile_array[pos.y][pos.x] != 0:
 		return 0
 	
 	var index = _pos_to_index(pos)
