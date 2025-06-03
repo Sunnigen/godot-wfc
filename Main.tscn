@@ -65,6 +65,10 @@ text = "Toggle Border"
 layout_mode = 2
 text = "Load Tileset"
 
+[node name="AnalyzeTilemap" type="Button" parent="HSplitContainer/MapSection/TopBar"]
+layout_mode = 2
+text = "Analyze Tilemap"
+
 [node name="ResetMap" type="Button" parent="HSplitContainer/MapSection/TopBar"]
 layout_mode = 2
 text = "Reset Map"
@@ -84,9 +88,12 @@ size = Vector2i(986, 584)
 render_target_update_mode = 4
 
 [node name="MapDisplay" type="Node2D" parent="HSplitContainer/MapSection/ViewportContainer/SubViewport"]
+z_as_relative = false
+texture_filter = 5
 script = ExtResource("2_5678")
 
 [node name="MapCursor" type="Node2D" parent="HSplitContainer/MapSection/ViewportContainer/SubViewport/MapDisplay"]
+visible = false
 script = ExtResource("4_3456")
 
 [node name="BottomBar" type="HBoxContainer" parent="HSplitContainer/MapSection"]
@@ -173,13 +180,120 @@ size = Vector2i(400, 381)
 [node name="TileMatchesDialog" parent="." instance=ExtResource("7_matches")]
 visible = false
 
+[node name="TilemapAnalysisDialog" type="AcceptDialog" parent="."]
+title = "Analyze Tilemap"
+size = Vector2i(500, 400)
+
+[node name="VBox" type="VBoxContainer" parent="TilemapAnalysisDialog"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -40.0
+
+[node name="Title" type="Label" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+text = "Analyze an existing tilemap to extract tiles and adjacency rules"
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="FileSection" type="VBoxContainer" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="FileLabel" type="Label" parent="TilemapAnalysisDialog/VBox/FileSection"]
+layout_mode = 2
+text = "Input Tilemap File:"
+
+[node name="FileContainer" type="HBoxContainer" parent="TilemapAnalysisDialog/VBox/FileSection"]
+layout_mode = 2
+
+[node name="FilePathInput" type="LineEdit" parent="TilemapAnalysisDialog/VBox/FileSection/FileContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Select a tilemap PNG file..."
+editable = false
+
+[node name="BrowseButton" type="Button" parent="TilemapAnalysisDialog/VBox/FileSection/FileContainer"]
+layout_mode = 2
+text = "Browse"
+
+[node name="HSeparator2" type="HSeparator" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="SettingsSection" type="VBoxContainer" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="SettingsGrid" type="GridContainer" parent="TilemapAnalysisDialog/VBox/SettingsSection"]
+layout_mode = 2
+columns = 2
+
+[node name="TileSizeLabel" type="Label" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+text = "Tile Size (pixels):"
+
+[node name="TileSizeInput" type="SpinBox" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+min_value = 3.0
+max_value = 128.0
+value = 16.0
+
+[node name="OutputNameLabel" type="Label" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+text = "Output Tileset Name:"
+
+[node name="OutputNameInput" type="LineEdit" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+placeholder_text = "e.g. flowers, dungeon, etc."
+
+[node name="HSeparator3" type="HSeparator" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="ProgressSection" type="VBoxContainer" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="TilemapAnalysisDialog/VBox/ProgressSection"]
+layout_mode = 2
+text = "Ready to analyze"
+
+[node name="ProgressBar" type="ProgressBar" parent="TilemapAnalysisDialog/VBox/ProgressSection"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ActionButtons" type="HBoxContainer" parent="TilemapAnalysisDialog/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="AnalyzeButton" type="Button" parent="TilemapAnalysisDialog/VBox/ActionButtons"]
+layout_mode = 2
+disabled = true
+text = "Analyze Tilemap"
+
+[node name="FileDialog" type="FileDialog" parent="TilemapAnalysisDialog"]
+title = "Open a File"
+size = Vector2i(800, 600)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png ; PNG Images")
+
 [connection signal="toggled" from="HSplitContainer/MapSection/TopBar/GenerationToggle" to="." method="_on_generation_toggled"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/GenerateOne" to="." method="_on_generate_one_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/GenerateFive" to="." method="_on_generate_five_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/MapSize" to="." method="_on_map_size_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/ToggleBorder" to="." method="_on_toggle_border_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/LoadTileset" to="." method="_on_load_tileset_pressed"]
+[connection signal="pressed" from="HSplitContainer/MapSection/TopBar/AnalyzeTilemap" to="." method="_on_analyze_tilemap_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/ResetMap" to="." method="_on_reset_map_pressed"]
 [connection signal="pressed" from="HSplitContainer/MapSection/TopBar/PrintStats" to="." method="_on_print_stats_pressed"]
 [connection signal="pressed" from="HSplitContainer/ProbabilityPalette/Content/Header/CloseButton" to="HSplitContainer/ProbabilityPalette" method="hide"]
 [connection signal="confirmed" from="MapSizeDialog" to="." method="_on_map_size_confirmed"]
+[connection signal="pressed" from="TilemapAnalysisDialog/VBox/FileSection/FileContainer/BrowseButton" to="." method="_on_browse_tilemap_pressed"]
+[connection signal="pressed" from="TilemapAnalysisDialog/VBox/ActionButtons/AnalyzeButton" to="." method="_on_analyze_button_pressed"]
+[connection signal="file_selected" from="TilemapAnalysisDialog/FileDialog" to="." method="_on_tilemap_file_selected"]
