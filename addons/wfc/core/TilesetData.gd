@@ -108,6 +108,20 @@ func get_opposite_direction(direction: Direction) -> Direction:
 		Direction.WEST: return Direction.EAST
 		_: return Direction.SOUTH
 
+func is_boundary_constrained(tile_id: int, direction: Direction) -> bool:
+	"""Check if tile requires being at a specific boundary due to empty adjacency rules"""
+	if tile_id in adjacency_rules:
+		return adjacency_rules[tile_id][direction].is_empty()
+	return false
+
+func get_required_boundaries(tile_id: int) -> Array[Direction]:
+	"""Get all boundaries this tile requires (directions with empty adjacency)"""
+	var boundaries: Array[Direction] = []
+	for direction in [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST]:
+		if is_boundary_constrained(tile_id, direction):
+			boundaries.append(direction)
+	return boundaries
+
 func _create_blank_texture() -> ImageTexture:
 	"""Create a transparent texture for blank tiles"""
 	var image = Image.create(tile_size, tile_size, false, Image.FORMAT_RGBA8)

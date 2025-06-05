@@ -249,6 +249,38 @@ text = "Output Tileset Name:"
 layout_mode = 2
 placeholder_text = "e.g. flowers, dungeon, etc."
 
+[node name="ColorThresholdLabel" type="Label" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+tooltip_text = "RGB color difference threshold for automatic tile adjacencies (0-255). Lower = stricter color matching."
+text = "Color Threshold:"
+
+[node name="ColorThresholdInput" type="SpinBox" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+min_value = 0.0
+max_value = 255.0
+step = 1.0
+value = 25.0
+tooltip_text = "RGB color difference threshold for automatic tile adjacencies. 0 = exact match, 255 = any color."
+
+[node name="AdjacencyMethodsLabel" type="Label" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+text = "Adjacency Methods:"
+
+[node name="AdjacencyMethodsContainer" type="VBoxContainer" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid"]
+layout_mode = 2
+
+[node name="UsePositionRulesCheck" type="CheckBox" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/AdjacencyMethodsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Use Position-Based Rules"
+tooltip_text = "Generate adjacencies based on tile positions in the original PNG"
+
+[node name="UsePixelRulesCheck" type="CheckBox" parent="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/AdjacencyMethodsContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Use Pixel-Based Rules"
+tooltip_text = "Generate additional adjacencies based on edge color similarity"
+
 [node name="HSeparator3" type="HSeparator" parent="TilemapAnalysisDialog/VBox"]
 layout_mode = 2
 
@@ -296,4 +328,5 @@ filters = PackedStringArray("*.png ; PNG Images")
 [connection signal="confirmed" from="MapSizeDialog" to="." method="_on_map_size_confirmed"]
 [connection signal="pressed" from="TilemapAnalysisDialog/VBox/FileSection/FileContainer/BrowseButton" to="." method="_on_browse_tilemap_pressed"]
 [connection signal="pressed" from="TilemapAnalysisDialog/VBox/ActionButtons/AnalyzeButton" to="." method="_on_analyze_button_pressed"]
+[connection signal="toggled" from="TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/AdjacencyMethodsContainer/UsePixelRulesCheck" to="." method="_on_use_pixel_rules_toggled"]
 [connection signal="file_selected" from="TilemapAnalysisDialog/FileDialog" to="." method="_on_tilemap_file_selected"]
