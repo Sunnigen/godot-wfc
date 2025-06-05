@@ -1,28 +1,69 @@
 # WFC Tileset Data
 
-This folder will contain processed tileset data files in Godot's native resource format.
+This folder contains all tileset-related data for the Wave Function Collapse implementation.
 
-## File Structure
+## 📁 Folder Structure
 
-- `*.tres` - Tileset resource files containing:
-  - Tile textures
-  - Adjacency rules
-  - Base probability data
+### `input_maps/`
+**Store your source tilemap PNG files here**
+- Generated maps from original WFC implementation
+- Example maps for analysis
+- Any tilemap images you want to analyze
 
-## Converting from Python Pickle Files
+```
+input_maps/
+├── flowers_map.png      # Your tilemap PNG files
+├── dungeon_map.png
+└── grass_terrain.png
+```
 
-To convert existing pickle files from the Python version:
+### `generated_tilesets/`
+**Auto-generated .tres tileset files**
+- Created by the "Analyze Tilemap" tool
+- Ready-to-use TilesetData resources
+- Contains tiles + adjacency rules
 
-1. Copy pickle files from the original project's `data/` folder
-2. Use the tileset conversion utility (to be implemented)
-3. Processed files will be saved here as `.tres` resources
+```
+generated_tilesets/
+├── flowers.tres         # Generated from flowers_map.png
+├── dungeon.tres         # Generated from dungeon_map.png
+└── grass.tres
+```
 
-## Example Tilesets
+### `extracted_tiles/`
+**Individual tile images (auto-generated)**
+- PNG files for each unique tile found
+- Organized by tileset name
+- Used for debugging and reference
 
-The original project includes these tilesets:
-- `flowers.pickle` - Simple flower patterns
-- `grass.pickle` - Grass terrain tiles
-- `fe_*.pickle` - Fire Emblem game tiles
-- `dungeon_simple.pickle` - Simple dungeon layouts
+```
+extracted_tiles/
+├── flowers/
+│   ├── tile_01.png
+│   ├── tile_02.png
+│   └── ...
+└── dungeon/
+    ├── tile_01.png
+    └── ...
+```
 
-These will be converted to Godot format during implementation.
+## 🔄 Workflow
+
+1. **Place your tilemap PNG** → `input_maps/`
+2. **Click "Analyze Tilemap"** → Select from input_maps/
+3. **Generated tileset** → Saved to `generated_tilesets/`
+4. **Individual tiles** → Extracted to `extracted_tiles/`
+5. **Load tileset** → Use "Load Tileset" button
+
+## 📋 Supported Formats
+
+- **Input**: PNG images (any size, grid-based tiles)
+- **Output**: Godot .tres resource files
+- **Tile sizes**: 8x8 to 128x128 pixels
+- **Grid-based**: No spacing between tiles
+
+## 🎯 Next Steps
+
+1. Place your tilemap PNG files in `input_maps/`
+2. Use the "Analyze Tilemap" dialog to process them
+3. Generated tilesets will be available in "Load Tileset"

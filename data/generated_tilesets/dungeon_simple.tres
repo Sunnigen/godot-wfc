@@ -1,0 +1,613 @@
+[gd_resource type="Resource" script_class="TilesetData" load_steps=82 format=3 uid="uid://u5c3memu0c0g"]
+
+[ext_resource type="Script" path="res://addons/wfc/core/TilesetData.gd" id="1_2lfri"]
+
+[sub_resource type="Image" id="Image_k0hmr"]
+data = {
+"data": PackedByteArray(255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+"format": "RGB8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_xp0tc"]
+image = SubResource("Image_k0hmr")
+
+[sub_resource type="Image" id="Image_klpx0"]
+data = {
+"data": PackedByteArray(254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255, 254, 254, 254, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_1xpqf"]
+image = SubResource("Image_klpx0")
+
+[sub_resource type="Image" id="Image_vd33f"]
+data = {
+"data": PackedByteArray(14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_rffd0"]
+image = SubResource("Image_vd33f")
+
+[sub_resource type="Image" id="Image_fx3wb"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_0ir8i"]
+image = SubResource("Image_fx3wb")
+
+[sub_resource type="Image" id="Image_pjqjn"]
+data = {
+"data": PackedByteArray(63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_wt1x3"]
+image = SubResource("Image_pjqjn")
+
+[sub_resource type="Image" id="Image_qjgkq"]
+data = {
+"data": PackedByteArray(18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_h56d4"]
+image = SubResource("Image_qjgkq")
+
+[sub_resource type="Image" id="Image_xaqln"]
+data = {
+"data": PackedByteArray(89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_6wyye"]
+image = SubResource("Image_xaqln")
+
+[sub_resource type="Image" id="Image_fshcj"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_lryrd"]
+image = SubResource("Image_fshcj")
+
+[sub_resource type="Image" id="Image_6xbml"]
+data = {
+"data": PackedByteArray(184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_bcos0"]
+image = SubResource("Image_6xbml")
+
+[sub_resource type="Image" id="Image_8m7g4"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_xdwc6"]
+image = SubResource("Image_8m7g4")
+
+[sub_resource type="Image" id="Image_inumt"]
+data = {
+"data": PackedByteArray(81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_bnwfg"]
+image = SubResource("Image_inumt")
+
+[sub_resource type="Image" id="Image_viw76"]
+data = {
+"data": PackedByteArray(255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_7cgsc"]
+image = SubResource("Image_viw76")
+
+[sub_resource type="Image" id="Image_nd8dt"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255, 63, 73, 127, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_e8gx8"]
+image = SubResource("Image_nd8dt")
+
+[sub_resource type="Image" id="Image_ppjy0"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 122, 122, 122, 255, 29, 29, 29, 255, 29, 29, 29, 255, 122, 122, 122, 255, 29, 29, 29, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_qeicy"]
+image = SubResource("Image_ppjy0")
+
+[sub_resource type="Image" id="Image_baeyr"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 81, 81, 81, 255, 81, 81, 81, 255, 29, 29, 29, 255, 81, 81, 81, 255, 81, 81, 81, 255, 29, 29, 29, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_cifc4"]
+image = SubResource("Image_baeyr")
+
+[sub_resource type="Image" id="Image_pu7j5"]
+data = {
+"data": PackedByteArray(81, 81, 81, 255, 81, 81, 81, 255, 29, 29, 29, 255, 81, 81, 81, 255, 81, 81, 81, 255, 122, 122, 122, 255, 81, 81, 81, 255, 81, 81, 81, 255, 29, 29, 29, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_j560m"]
+image = SubResource("Image_pu7j5")
+
+[sub_resource type="Image" id="Image_hou6r"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 18, 121, 174, 255, 122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_ugvgc"]
+image = SubResource("Image_hou6r")
+
+[sub_resource type="Image" id="Image_noon1"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 18, 121, 174, 255, 122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_2hbek"]
+image = SubResource("Image_noon1")
+
+[sub_resource type="Image" id="Image_l33hh"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 31, 31, 31, 255, 89, 66, 40, 255, 29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_ma070"]
+image = SubResource("Image_l33hh")
+
+[sub_resource type="Image" id="Image_b4yps"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 89, 66, 40, 255, 89, 66, 40, 255, 122, 122, 122, 255, 89, 66, 40, 255, 89, 66, 40, 255, 122, 122, 122, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_7n2t7"]
+image = SubResource("Image_b4yps")
+
+[sub_resource type="Image" id="Image_7dpmw"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_4m558"]
+image = SubResource("Image_7dpmw")
+
+[sub_resource type="Image" id="Image_3gnd4"]
+data = {
+"data": PackedByteArray(81, 81, 81, 255, 184, 37, 53, 255, 81, 81, 81, 255, 184, 37, 53, 255, 184, 37, 53, 255, 81, 81, 81, 255, 184, 37, 53, 255, 184, 37, 53, 255, 81, 81, 81, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_ml8po"]
+image = SubResource("Image_3gnd4")
+
+[sub_resource type="Image" id="Image_q2pgo"]
+data = {
+"data": PackedByteArray(18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255, 122, 122, 122, 255, 122, 122, 122, 255, 18, 121, 174, 255, 122, 122, 122, 255, 122, 122, 122, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_nc8w4"]
+image = SubResource("Image_q2pgo")
+
+[sub_resource type="Image" id="Image_slh43"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255, 18, 121, 174, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_36muw"]
+image = SubResource("Image_slh43")
+
+[sub_resource type="Image" id="Image_lgoth"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255, 29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255, 29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_13rkx"]
+image = SubResource("Image_lgoth")
+
+[sub_resource type="Image" id="Image_oxrao"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_twgyv"]
+image = SubResource("Image_oxrao")
+
+[sub_resource type="Image" id="Image_uw6q7"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 29, 29, 29, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_o0y65"]
+image = SubResource("Image_uw6q7")
+
+[sub_resource type="Image" id="Image_refkm"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 122, 122, 122, 255, 63, 73, 127, 255, 63, 73, 127, 255, 122, 122, 122, 255, 63, 73, 127, 255, 63, 73, 127, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_h2ksi"]
+image = SubResource("Image_refkm")
+
+[sub_resource type="Image" id="Image_hbre8"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255, 14, 115, 136, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_5eg1h"]
+image = SubResource("Image_hbre8")
+
+[sub_resource type="Image" id="Image_5dtqh"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_tq2ih"]
+image = SubResource("Image_5dtqh")
+
+[sub_resource type="Image" id="Image_ykow5"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_56dxi"]
+image = SubResource("Image_ykow5")
+
+[sub_resource type="Image" id="Image_nhk5s"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255, 122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255, 122, 122, 122, 255, 18, 121, 174, 255, 18, 121, 174, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_nvw4p"]
+image = SubResource("Image_nhk5s")
+
+[sub_resource type="Image" id="Image_iegd2"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 122, 122, 122, 255, 29, 29, 29, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_issog"]
+image = SubResource("Image_iegd2")
+
+[sub_resource type="Image" id="Image_loucv"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 47, 0, 255, 89, 47, 0, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 47, 0, 255, 89, 66, 40, 255, 89, 47, 0, 255, 89, 47, 0, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_pg4f8"]
+image = SubResource("Image_loucv")
+
+[sub_resource type="Image" id="Image_e7xma"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 47, 0, 255, 89, 66, 40, 255, 89, 47, 0, 255, 89, 47, 0, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_7d8hf"]
+image = SubResource("Image_e7xma")
+
+[sub_resource type="Image" id="Image_rstbp"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 89, 66, 40, 255, 14, 115, 136, 255, 89, 66, 40, 255, 14, 115, 136, 255, 14, 115, 136, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_jcskp"]
+image = SubResource("Image_rstbp")
+
+[sub_resource type="Image" id="Image_nxr3c"]
+data = {
+"data": PackedByteArray(89, 66, 40, 255, 14, 115, 136, 255, 14, 115, 136, 255, 89, 66, 40, 255, 14, 115, 136, 255, 14, 115, 136, 255, 89, 66, 40, 255, 14, 115, 136, 255, 14, 115, 136, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_31pii"]
+image = SubResource("Image_nxr3c")
+
+[sub_resource type="Image" id="Image_x6rem"]
+data = {
+"data": PackedByteArray(122, 122, 122, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 122, 122, 122, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_svbvu"]
+image = SubResource("Image_x6rem")
+
+[sub_resource type="Image" id="Image_hblsf"]
+data = {
+"data": PackedByteArray(29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 29, 29, 29, 255, 122, 122, 122, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_khald"]
+image = SubResource("Image_hblsf")
+
+[sub_resource type="Image" id="Image_shja8"]
+data = {
+"data": PackedByteArray(81, 81, 81, 255, 81, 81, 81, 255, 81, 81, 81, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255, 184, 37, 53, 255),
+"format": "RGBA8",
+"height": 3,
+"mipmaps": false,
+"width": 3
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_6nf01"]
+image = SubResource("Image_shja8")
+
+[resource]
+script = ExtResource("1_2lfri")
+tile_size = 3
+tile_textures = {
+0: SubResource("ImageTexture_xp0tc"),
+1: SubResource("ImageTexture_1xpqf"),
+2: SubResource("ImageTexture_rffd0"),
+3: SubResource("ImageTexture_0ir8i"),
+4: SubResource("ImageTexture_wt1x3"),
+5: SubResource("ImageTexture_h56d4"),
+6: SubResource("ImageTexture_6wyye"),
+7: SubResource("ImageTexture_lryrd"),
+8: SubResource("ImageTexture_bcos0"),
+9: SubResource("ImageTexture_xdwc6"),
+10: SubResource("ImageTexture_bnwfg"),
+11: SubResource("ImageTexture_7cgsc"),
+12: SubResource("ImageTexture_e8gx8"),
+13: SubResource("ImageTexture_qeicy"),
+14: SubResource("ImageTexture_cifc4"),
+15: SubResource("ImageTexture_j560m"),
+16: SubResource("ImageTexture_ugvgc"),
+17: SubResource("ImageTexture_2hbek"),
+18: SubResource("ImageTexture_ma070"),
+19: SubResource("ImageTexture_7n2t7"),
+20: SubResource("ImageTexture_4m558"),
+21: SubResource("ImageTexture_ml8po"),
+22: SubResource("ImageTexture_nc8w4"),
+23: SubResource("ImageTexture_36muw"),
+24: SubResource("ImageTexture_13rkx"),
+25: SubResource("ImageTexture_twgyv"),
+26: SubResource("ImageTexture_o0y65"),
+27: SubResource("ImageTexture_h2ksi"),
+28: SubResource("ImageTexture_5eg1h"),
+29: SubResource("ImageTexture_tq2ih"),
+30: SubResource("ImageTexture_56dxi"),
+31: SubResource("ImageTexture_nvw4p"),
+32: SubResource("ImageTexture_issog"),
+33: SubResource("ImageTexture_pg4f8"),
+34: SubResource("ImageTexture_7d8hf"),
+35: SubResource("ImageTexture_jcskp"),
+36: SubResource("ImageTexture_31pii"),
+37: SubResource("ImageTexture_svbvu"),
+38: SubResource("ImageTexture_khald"),
+39: SubResource("ImageTexture_6nf01")
+}
+adjacency_rules = {
+0: [[], [], [], []],
+1: [[11], [2], [], []],
+2: [[12], [3], [], [1]],
+3: [[9], [4], [], [2]],
+4: [[9], [5], [], [3]],
+5: [[9], [6], [], [4]],
+6: [[11], [7], [], [5]],
+7: [[13], [8], [], [6]],
+8: [[14], [9], [], [7]],
+9: [[10, 15, 16, 17, 22], [10, 9, 11], [3, 4, 5, 11], [8, 12, 9]],
+10: [[10, 21, 23, 34], [10, 15, 11], [9, 10, 12, 21, 11], [9, 14, 10, 30, 39]],
+11: [[9, 18, 36, 11, 13, 39, 10], [12, 13, 32, 33, 24, 11, 39], [1, 6, 23, 26, 28, 32, 24, 11, 33, 34], [9, 31, 24, 33, 36, 11, 13, 10]],
+12: [[10], [9], [2], [11]],
+13: [[19], [14, 11], [7, 11], [11, 38]],
+14: [[20], [10], [8], [13]],
+15: [[24], [16], [9], [10]],
+16: [[25], [17], [9], [15]],
+17: [[26], [18], [9], [16]],
+18: [[27], [19], [11], [17]],
+19: [[28], [20], [13], [18]],
+20: [[29], [21], [14], [19]],
+21: [[30, 10], [21], [10], [20, 21]],
+22: [[31], [23], [9], []],
+23: [[11], [24], [10], [22]],
+24: [[32, 11], [25, 11, 33], [15, 25, 29], [23, 32, 11]],
+25: [[24], [26], [16], [24]],
+26: [[11], [27], [17], [25]],
+27: [[33], [28], [18], [26]],
+28: [[11], [29], [19], [27]],
+29: [[24], [30], [20], [28]],
+30: [[33], [10], [21], [29]],
+31: [[35], [11], [22], []],
+32: [[11], [24], [24], [11]],
+33: [[11], [11, 34], [27, 30], [11, 24]],
+34: [[11], [], [10], [33]],
+35: [[37], [36], [31], []],
+36: [[38], [11], [11], [35]],
+37: [[], [38], [35], []],
+38: [[], [13], [36], [37]],
+39: [[], [10], [11], [11]]
+}
+base_probabilities = {
+0: [0.0, 0.0, 0.0, 0.0],
+1: [1.0, 1.0, 1.0, 1.0],
+2: [1.0, 1.0, 1.0, 1.0],
+3: [1.0, 1.0, 1.0, 1.0],
+4: [1.0, 1.0, 1.0, 1.0],
+5: [1.0, 1.0, 1.0, 1.0],
+6: [1.0, 1.0, 1.0, 1.0],
+7: [1.0, 1.0, 1.0, 1.0],
+8: [1.0, 1.0, 1.0, 1.0],
+9: [1.0, 1.0, 1.0, 1.0],
+10: [1.0, 1.0, 1.0, 1.0],
+11: [1.0, 1.0, 1.0, 1.0],
+12: [1.0, 1.0, 1.0, 1.0],
+13: [1.0, 1.0, 1.0, 1.0],
+14: [1.0, 1.0, 1.0, 1.0],
+15: [1.0, 1.0, 1.0, 1.0],
+16: [1.0, 1.0, 1.0, 1.0],
+17: [1.0, 1.0, 1.0, 1.0],
+18: [1.0, 1.0, 1.0, 1.0],
+19: [1.0, 1.0, 1.0, 1.0],
+20: [1.0, 1.0, 1.0, 1.0],
+21: [1.0, 1.0, 1.0, 1.0],
+22: [1.0, 1.0, 1.0, 1.0],
+23: [1.0, 1.0, 1.0, 1.0],
+24: [1.0, 1.0, 1.0, 1.0],
+25: [1.0, 1.0, 1.0, 1.0],
+26: [1.0, 1.0, 1.0, 1.0],
+27: [1.0, 1.0, 1.0, 1.0],
+28: [1.0, 1.0, 1.0, 1.0],
+29: [1.0, 1.0, 1.0, 1.0],
+30: [1.0, 1.0, 1.0, 1.0],
+31: [1.0, 1.0, 1.0, 1.0],
+32: [1.0, 1.0, 1.0, 1.0],
+33: [1.0, 1.0, 1.0, 1.0],
+34: [1.0, 1.0, 1.0, 1.0],
+35: [1.0, 1.0, 1.0, 1.0],
+36: [1.0, 1.0, 1.0, 1.0],
+37: [1.0, 1.0, 1.0, 1.0],
+38: [1.0, 1.0, 1.0, 1.0],
+39: [1.0, 1.0, 1.0, 1.0]
+}
