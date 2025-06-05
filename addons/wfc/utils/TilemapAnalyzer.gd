@@ -14,6 +14,11 @@ var tile_positions: Dictionary = {}  # tile_id -> Array[Vector2i] positions
 var adjacency_map: Dictionary = {}   # position -> {N, E, S, W: tile_id}
 var tileset_data: TilesetData
 
+# Adjacency method parameters
+var color_threshold: float = 25.0
+var use_position_rules: bool = true
+var use_pixel_rules: bool = true
+
 # Progress tracking
 signal progress_updated(step: String, percentage: float)
 signal analysis_complete(tileset: TilesetData)
@@ -22,10 +27,13 @@ signal analysis_failed(error: String)
 func _init():
 	pass
 
-func analyze_tilemap(file_path: String, tile_sz: int, output_nm: String):
+func analyze_tilemap(file_path: String, tile_sz: int, output_nm: String, color_thresh: float = 25.0, use_pos_rules: bool = true, use_pix_rules: bool = true):
 	"""Main entry point for tilemap analysis"""
 	tile_size = tile_sz
 	output_name = output_nm
+	color_threshold = color_thresh
+	use_position_rules = use_pos_rules
+	use_pixel_rules = use_pix_rules
 	
 	progress_updated.emit("Cleaning up existing files...", 0.0)
 	
@@ -227,28 +235,87 @@ func _generate_tileset_data() -> bool:
 			"W": {}
 		}
 	
-	# First pass: collect all adjacency relationships (single direction)
-	for pos in adjacency_map.keys():
-		var center_tile_id = _get_tile_id_at_position(pos)
-		if center_tile_id == 0:
-			continue
+	# First pass: collect position-based adjacency relationships (if enabled)
+	if use_position_rules:
+		print("TilemapAnalyzer: Generating position-based adjacencies")
+		for pos in adjacency_map.keys():
+			var center_tile_id = _get_tile_id_at_position(pos)
+			if center_tile_id == 0:
+				continue
+			
+			var neighbors = adjacency_map[pos]
+			for direction in ["N", "E", "S", "W"]:
+				var neighbor_id = neighbors.get(direction, 0)
+				if neighbor_id > 0:  # Valid neighbor
+					tile_rules[center_tile_id][direction][neighbor_id] = true
 		
-		var neighbors = adjacency_map[pos]
-		for direction in ["N", "E", "S", "W"]:
-			var neighbor_id = neighbors.get(direction, 0)
-			if neighbor_id > 0:  # Valid neighbor
-				tile_rules[center_tile_id][direction][neighbor_id] = true
+		# Second pass: ensure bidirectional symmetry for position-based rules
+		for tile_id in tile_rules.keys():
+			for direction in ["N", "E", "S", "W"]:
+				var neighbors_in_direction = tile_rules[tile_id][direction].keys()
+				var opposite_dir = _get_opposite_direction(direction)
+				
+				for neighbor_id in neighbors_in_direction:
+					# Ensure the reverse relationship exists
+					if neighbor_id in tile_rules:
+						tile_rules[neighbor_id][opposite_dir][tile_id] = true
+	else:
+		print("TilemapAnalyzer: Skipping position-based adjacencies (disabled)")
 	
-	# Second pass: ensure bidirectional symmetry
+	# Count position-based adjacencies before adding pixel-based ones
+	var position_based_adjacencies = 0
 	for tile_id in tile_rules.keys():
 		for direction in ["N", "E", "S", "W"]:
-			var neighbors_in_direction = tile_rules[tile_id][direction].keys()
-			var opposite_dir = _get_opposite_direction(direction)
-			
-			for neighbor_id in neighbors_in_direction:
-				# Ensure the reverse relationship exists
-				if neighbor_id in tile_rules:
-					tile_rules[neighbor_id][opposite_dir][tile_id] = true
+			position_based_adjacencies += tile_rules[tile_id][direction].size()
+	
+	# Third pass: add pixel-based adjacencies (if enabled)
+	var pixel_based_adjacencies = 0
+	var pixel_comparisons = 0
+	
+	print("TilemapAnalyzer: Starting with %d position-based adjacencies" % position_based_adjacencies)
+	
+	if use_pixel_rules:
+		print("TilemapAnalyzer: Adding pixel-based adjacencies (threshold: %d)" % color_threshold)
+		
+		for tile_a in range(1, unique_tiles.size() + 1):
+			for tile_b in range(1, unique_tiles.size() + 1):
+				if tile_a == tile_b:
+					continue  # Skip self-comparison
+				
+				for direction in ["N", "E", "S", "W"]:
+					pixel_comparisons += 1
+					
+					# Check if not already connected by position-based rules
+					if not tile_rules[tile_a][direction].has(tile_b):
+						# Test pixel compatibility
+						if _tiles_compatible_by_color(tile_a, tile_b, direction):
+							# Add bidirectional adjacency
+							tile_rules[tile_a][direction][tile_b] = true
+							var opposite_dir = _get_opposite_direction(direction)
+							tile_rules[tile_b][opposite_dir][tile_a] = true
+							pixel_based_adjacencies += 1
+	else:
+		print("TilemapAnalyzer: Skipping pixel-based adjacencies (disabled)")
+	
+	# Count total adjacencies after adding pixel-based ones
+	var total_adjacencies = 0
+	for tile_id in tile_rules.keys():
+		for direction in ["N", "E", "S", "W"]:
+			total_adjacencies += tile_rules[tile_id][direction].size()
+	
+	if use_pixel_rules:
+		print("TilemapAnalyzer: Added %d pixel-based adjacencies from %d comparisons" % [pixel_based_adjacencies, pixel_comparisons])
+	
+	var methods_used = []
+	if use_position_rules:
+		methods_used.append("position")
+	if use_pixel_rules:
+		methods_used.append("pixel")
+	
+	print("TilemapAnalyzer: Final result: %d total adjacencies using %s methods" % [total_adjacencies, "/".join(methods_used)])
+	if use_position_rules and use_pixel_rules:
+		print("  ├─ Position-based: %d" % position_based_adjacencies)
+		print("  └─ Pixel-based: %d" % (total_adjacencies - position_based_adjacencies))
 	
 	# Convert to TilesetData format and add tiles
 	for tile_id in range(1, unique_tiles.size() + 1):
@@ -334,6 +401,62 @@ func _get_opposite_direction(direction: String) -> String:
 		"E": return "W"
 		"W": return "E"
 		_: return "N"  # Default fallback
+
+# Pixel-based adjacency methods
+
+func _get_edge_pixels(tile_image: Image, direction: String) -> Array[Color]:
+	"""Extract all edge pixels for a given direction"""
+	var edge_pixels: Array[Color] = []
+	var size = tile_image.get_width()  # Assuming square tiles
+	
+	match direction:
+		"N":  # North - top row
+			for x in range(size):
+				edge_pixels.append(tile_image.get_pixel(x, 0))
+		"S":  # South - bottom row
+			for x in range(size):
+				edge_pixels.append(tile_image.get_pixel(x, size - 1))
+		"E":  # East - right column
+			for y in range(size):
+				edge_pixels.append(tile_image.get_pixel(size - 1, y))
+		"W":  # West - left column
+			for y in range(size):
+				edge_pixels.append(tile_image.get_pixel(0, y))
+	
+	return edge_pixels
+
+func _rgb_distance(color1: Color, color2: Color) -> float:
+	"""Calculate RGB distance between two colors"""
+	var dr = abs(color1.r - color2.r) * 255.0
+	var dg = abs(color1.g - color2.g) * 255.0
+	var db = abs(color1.b - color2.b) * 255.0
+	# Use max difference (Chebyshev distance) for strict color matching
+	return max(dr, max(dg, db))
+
+func _tiles_compatible_by_color(tile_a_id: int, tile_b_id: int, direction: String) -> bool:
+	"""Check if two tiles are compatible based on edge color similarity"""
+	if tile_a_id < 1 or tile_a_id > unique_tiles.size() or tile_b_id < 1 or tile_b_id > unique_tiles.size():
+		return false
+	
+	var tile_a_image = unique_tiles[tile_a_id - 1]  # tile_id is 1-based, array is 0-based
+	var tile_b_image = unique_tiles[tile_b_id - 1]
+	
+	# Get the appropriate edges for comparison
+	var tile_a_edge = _get_edge_pixels(tile_a_image, direction)
+	var opposite_direction = _get_opposite_direction(direction)
+	var tile_b_edge = _get_edge_pixels(tile_b_image, opposite_direction)
+	
+	# Both edges must have the same number of pixels
+	if tile_a_edge.size() != tile_b_edge.size():
+		return false
+	
+	# Check if ALL edge pixels are within threshold
+	for i in range(tile_a_edge.size()):
+		var color_distance = _rgb_distance(tile_a_edge[i], tile_b_edge[i])
+		if color_distance > color_threshold:
+			return false  # One pixel exceeds threshold, tiles incompatible
+	
+	return true  # All pixels within threshold
 
 func _cleanup_existing_files():
 	"""Remove existing tileset and tile images before re-analysis"""

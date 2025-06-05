@@ -166,21 +166,33 @@ func _on_analyze_button_pressed():
 	var file_input = get_node("TilemapAnalysisDialog/VBox/FileSection/FileContainer/FilePathInput")
 	var tile_size_input = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/TileSizeInput")
 	var output_input = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/OutputNameInput")
+	var color_threshold_input = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/ColorThresholdInput")
+	var use_position_check = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/AdjacencyMethodsContainer/UsePositionRulesCheck")
+	var use_pixel_check = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/AdjacencyMethodsContainer/UsePixelRulesCheck")
 	var progress_label = get_node("TilemapAnalysisDialog/VBox/ProgressSection/ProgressLabel")
 	var progress_bar = get_node("TilemapAnalysisDialog/VBox/ProgressSection/ProgressBar")
 	var analyze_button = get_node("TilemapAnalysisDialog/VBox/ActionButtons/AnalyzeButton")
 	
-	if not file_input or not tile_size_input or not output_input:
+	if not file_input or not tile_size_input or not output_input or not color_threshold_input or not use_position_check or not use_pixel_check:
 		push_error("Missing dialog components")
 		return
 	
 	var file_path = file_input.text.strip_edges()
 	var tile_size = int(tile_size_input.value)
 	var output_name = output_input.text.strip_edges()
+	var color_threshold = float(color_threshold_input.value)
+	var use_position_rules = use_position_check.button_pressed
+	var use_pixel_rules = use_pixel_check.button_pressed
 	
 	if file_path.is_empty() or output_name.is_empty():
 		if progress_label:
 			progress_label.text = "Error: Missing file path or output name"
+		return
+	
+	# Validate adjacency method selection
+	if not use_position_rules and not use_pixel_rules:
+		if progress_label:
+			progress_label.text = "Error: Must select at least one adjacency method"
 		return
 	
 	# Disable analyze button during processing
@@ -200,10 +212,10 @@ func _on_analyze_button_pressed():
 	current_progress_bar = progress_bar
 	current_analyze_button = analyze_button
 	
-	print("Starting tilemap analysis: %s -> %s" % [file_path, output_name])
+	print("Starting tilemap analysis: %s -> %s (threshold: %d, position: %s, pixel: %s)" % [file_path, output_name, color_threshold, use_position_rules, use_pixel_rules])
 	
 	# Start analysis
-	analyzer.analyze_tilemap(file_path, tile_size, output_name)
+	analyzer.analyze_tilemap(file_path, tile_size, output_name, color_threshold, use_position_rules, use_pixel_rules)
 
 # Tilemap Analysis Signal Handlers
 func _on_analysis_progress(step: String, percentage: float):
@@ -250,6 +262,18 @@ func _on_analysis_failed(error: String):
 		current_analyze_button.disabled = false
 	
 	push_error("Tilemap analysis failed: " + error)
+
+func _on_use_pixel_rules_toggled(pressed: bool):
+	"""Handle pixel rules checkbox toggle"""
+	var color_threshold_input = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/ColorThresholdInput")
+	var color_threshold_label = get_node("TilemapAnalysisDialog/VBox/SettingsSection/SettingsGrid/ColorThresholdLabel")
+	
+	if color_threshold_input:
+		color_threshold_input.editable = pressed
+		color_threshold_input.modulate = Color.WHITE if pressed else Color(0.7, 0.7, 0.7, 1.0)
+	
+	if color_threshold_label:
+		color_threshold_label.modulate = Color.WHITE if pressed else Color(0.7, 0.7, 0.7, 1.0)
 
 func _update_ui_state():
 	# Update any UI elements based on current state

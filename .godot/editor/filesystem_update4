@@ -1,0 +1,10 @@
+res://Main.tscn
+res://addons/wfc/ui/ProbabilityPalette.gd
+res://theme/wfc_theme.tres
+res://addons/wfc/ui/MapDisplay.gd
+res://addons/wfc/core/TilesetData.gd
+res://data/generated_tilesets/flowers.tres
+res://addons/wfc/ui/TileMatchesDialog.gd
+res://addons/wfc/ui/TileProbabilityDialog.gd
+res://Main.gd
+res://addons/wfc/core/WFC.gd

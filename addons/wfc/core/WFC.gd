@@ -23,6 +23,14 @@ var contradictions: int = 0
 var completed_tiles: int = 0
 var propagation_waves: int = 0  # Track wave propagation performance
 
+# Backtracking system
+var placement_history: Array = []  # Stack of {position: Vector2i, tile_id: int, previous_possibilities: PackedInt64Array}
+var max_backtrack_attempts: int = 5000  # Prevent infinite loops
+var backtrack_depth: int = 0
+
+# Early contradiction detection
+var detected_contradictions: Array[Vector2i] = []  # Positions that hit entropy 0 during propagation
+
 # Entropy caching system
 var entropy_cache: PackedInt32Array = []  # One entropy per map position (flat array)
 var entropy_dirty: PackedByteArray = []   # 1 = needs recalc, 0 = clean
@@ -100,35 +108,36 @@ func _reset_state():
 	completed_tiles = 0
 	propagation_waves = 0
 	entropy_calculations = 0
+	
+	# Reset backtracking state
+	placement_history.clear()
+	backtrack_depth = 0
+	
+	# Reset contradiction detection
+	detected_contradictions.clear()
 
 func find_lowest_entropy() -> Vector2i:
 	"""Find position with lowest entropy using cached values"""
 	# Update only positions that changed
 	_update_dirty_entropies()
 	
-	print("\nDEBUG: Finding lowest entropy...")
-	print("DEBUG: Undecided positions count: %d" % undecided_positions.size())
-	
 	var best_pos = Vector2i(-1, -1)
 	var best_entropy = 999
+	var contradiction_count = 0
 	
 	for pos in undecided_positions:
 		var index = pos.y * map_width + pos.x
 		var entropy = entropy_cache[index]
-		if entropy > 0 and entropy < best_entropy:
+		if entropy == 0:
+			contradiction_count += 1
+		elif entropy < best_entropy:
 			best_entropy = entropy
 			best_pos = pos
 	
 	if best_pos == Vector2i(-1, -1):
-		print("DEBUG: No valid position found! Best entropy was: %d" % best_entropy)
-		print("DEBUG: Checked %d positions" % undecided_positions.size())
-		# Let's check a sample position
-		if undecided_positions.size() > 0:
-			var sample_pos = undecided_positions[0]
-			print("DEBUG: Sample undecided position %s has entropy: %d" % [sample_pos, get_entropy_at(sample_pos)])
-			print("DEBUG: Possible tiles at sample: ", _get_possible_tiles(sample_pos))
-	else:
-		print("DEBUG: Found best position %s with entropy %d" % [best_pos, best_entropy])
+		print("🚨 BACKTRACK TRIGGER: No valid positions found!")
+		print("   Undecided positions: %d (all with entropy 0)" % undecided_positions.size())
+		print("   Contradictions found: %d" % contradiction_count)
 	
 	lowest_entropy = [best_pos, best_entropy]
 	entropy_updated.emit(best_pos, best_entropy)
@@ -150,47 +159,137 @@ func generate_step() -> bool:
 	# Find position with lowest entropy
 	var pos = find_lowest_entropy()
 	if pos == Vector2i(-1, -1):
-		push_error("WFC: No valid positions found")
-		contradiction_found.emit(Vector2i(-1, -1))
-		return false
+		# All remaining positions have entropy 0 - trigger backtracking
+		print("🔄 ATTEMPTING BACKTRACK: All positions have entropy 0")
+		if _attempt_backtrack():
+			print("✅ BACKTRACK SUCCESS: Retrying generation step")
+			return true  # Continue generation after backtrack
+		else:
+			print("❌ BACKTRACK FAILED: Generation stopped")
+			contradiction_found.emit(Vector2i(-1, -1))
+			return false
 	
 	# Get possible tiles at this position
 	var possible_tiles = _get_possible_tiles(pos)
 	if possible_tiles.size() == 0:
-		print("WFC: Contradiction at position (%d, %d)" % [pos.x, pos.y])
+		print("🚨 NO POSSIBLE TILES: Position (%d, %d) has no valid options" % [pos.x, pos.y])
 		contradictions += 1
+		
+		# Attempt backtracking
+		if _attempt_backtrack():
+			print("✅ BACKTRACK SUCCESS: Retrying generation after backtrack")
+			return true
+		else:
+			print("❌ BACKTRACK FAILED: Generation stopped")
+			contradiction_found.emit(pos)
+			return false
+	
+	# Try tiles until one succeeds or we run out of options
+	var excluded_tiles = []
+	var original_possible_count = possible_tiles.size()
+	
+	while possible_tiles.size() > 0:
+		var selected_tile = possible_tiles.pick_random()
+		
+		print("🔄 TRYING: Tile %d at %s (%d options remaining)" % [selected_tile, pos, possible_tiles.size()])
+		
+		# Attempt tentative placement
+		if place_tile(pos, selected_tile):
+			# Success! Tile placement worked
+			print("✅ TILE SUCCESS: Tile %d placed at %s after excluding %d options" % 
+				  [selected_tile, pos, excluded_tiles.size()])
+			return true
+		
+		# Placement failed - exclude this tile and try another
+		print("🚫 TILE FAILED: Excluding tile %d at %s" % [selected_tile, pos])
+		excluded_tiles.append(selected_tile)
+		possible_tiles.erase(selected_tile)
+		_set_tile_possible(pos, selected_tile, false)  # Remove from future consideration
+	
+	# All tiles failed at this position
+	print("💀 ALL TILES FAILED: Position %s exhausted all %d options: %s" % 
+		  [pos, original_possible_count, excluded_tiles])
+	contradictions += 1
+	
+	# Need to backtrack since no tile works at this position
+	if _attempt_backtrack():
+		print("✅ BACKTRACK SUCCESS: Retrying after all tiles failed")
+		return true
+	else:
+		print("❌ BACKTRACK FAILED: Cannot recover from tile failures")
 		contradiction_found.emit(pos)
 		return false
-	
-	# Select tile (uniform random for now)
-	var selected_tile = possible_tiles.pick_random()
-	
-	# Place tile
-	place_tile(pos, selected_tile)
-	
-	return true
 
-func place_tile(pos: Vector2i, tile_id: int):
-	"""Place a tile at the given position and update constraints"""
+func place_tile(pos: Vector2i, tile_id: int) -> bool:
+	"""
+	Tentatively place a tile and check for contradictions.
+	Returns true if placement is successful, false if it causes contradictions.
+	"""
 	if not _is_valid_position(pos):
 		push_error("WFC: Invalid position (%d, %d)" % [pos.x, pos.y])
-		return
+		return false
 	
-	# Place the tile
+	# Clear contradiction tracking
+	detected_contradictions.clear()
+	
+	# Save complete state BEFORE tentative placement
+	var saved_tile = tile_array[pos.y][pos.x]
+	var saved_possibilities = possibility_array.duplicate()
+	var saved_undecided = undecided_positions.duplicate()
+	var saved_completed = completed_tiles
+	
+	# TENTATIVE placement - place tile and propagate
 	tile_array[pos.y][pos.x] = tile_id
 	probability_array[pos.y][pos.x] = {}  # Clear probabilities
 	_clear_all_possibilities(pos)  # Clear bit array to match Dictionary
-	_mark_entropy_dirty(pos)  # CRITICAL: Update entropy cache for placed tile
+	_mark_entropy_dirty(pos)  # Update entropy cache
+	
+	# Propagate constraints to see if it causes contradictions
+	_propagate_constraints(pos, tile_id)
+	
+	# Check if propagation created any contradictions
+	if detected_contradictions.size() > 0:
+		print("🚫 TENTATIVE PLACEMENT FAILED: Tile %d at %s caused %d contradictions at: %s" % 
+			  [tile_id, pos, detected_contradictions.size(), detected_contradictions])
+		
+		# ROLLBACK - Restore previous state
+		tile_array[pos.y][pos.x] = saved_tile
+		possibility_array = saved_possibilities
+		undecided_positions = saved_undecided
+		completed_tiles = saved_completed
+		
+		# Mark all entropy as dirty since we restored possibilities
+		for y in range(map_height):
+			for x in range(map_width):
+				_mark_entropy_dirty(Vector2i(x, y))
+		
+		return false  # Placement failed
+	
+	# SUCCESS - No contradictions detected, commit the placement
+	print("✅ TENTATIVE PLACEMENT SUCCESS: Tile %d at %s" % [tile_id, pos])
+	
+	# Create history entry for backtracking
+	var history_entry = {
+		"position": pos,
+		"tile_id": tile_id,
+		"previous_possibilities": saved_possibilities,
+		"previous_undecided": saved_undecided,
+		"previous_completed_tiles": saved_completed
+	}
+	placement_history.append(history_entry)
+	
+	# Update final state
 	undecided_positions.erase(pos)
 	completed_tiles += 1
-	
-	# Update constraints around placed tile
-	_propagate_constraints(pos, tile_id)
 	
 	# Emit signal for UI update
 	tile_placed.emit(pos, tile_id)
 	
-	print("WFC: Placed tile %d at (%d, %d). %d positions remaining" % [tile_id, pos.x, pos.y, undecided_positions.size()])
+	# Only print placement every 10 tiles to reduce spam
+	if completed_tiles % 10 == 0 or undecided_positions.size() < 10:
+		print("WFC: Committed tile %d at (%d, %d). %d positions remaining" % [tile_id, pos.x, pos.y, undecided_positions.size()])
+	
+	return true  # Placement successful
 
 func _propagate_constraints(placed_pos: Vector2i, placed_tile: int):
 	"""Update probabilities using wave-based propagation (breadth-first search)"""
@@ -237,9 +336,9 @@ func _propagate_constraints(placed_pos: Vector2i, placed_tile: int):
 					propagation_queue.append(neighbor_pos)
 					visited[neighbor_pos] = true
 	
-	# Debug info for wave propagation
-	if positions_updated > 0:
-		print("WFC: Wave propagation updated %d positions" % positions_updated)
+	# Only log major wave propagation events
+	if positions_updated > 10:
+		print("WFC: Large wave propagation updated %d positions" % positions_updated)
 
 func _update_position_probabilities(pos: Vector2i):
 	"""Update probabilities for a specific position based on its neighbors"""
@@ -275,6 +374,45 @@ func _update_position_probabilities(pos: Vector2i):
 				new_valid_tiles[tile_id] = valid_tiles[tile_id]
 		
 		valid_tiles = new_valid_tiles
+	
+	# Apply boundary constraints - filter tiles that require specific edges
+	var boundary_filtered_tiles = {}
+	var boundary_rejections = 0
+	
+	for tile_id in valid_tiles.keys():
+		var can_place = true
+		var rejection_reason = ""
+		
+		# Check each direction for boundary requirements
+		for direction in [TilesetData.Direction.NORTH, TilesetData.Direction.EAST, TilesetData.Direction.SOUTH, TilesetData.Direction.WEST]:
+			if tileset_data.is_boundary_constrained(tile_id, direction):
+				# This tile requires being at this boundary
+				if not _is_at_edge(pos, direction):
+					can_place = false
+					var direction_name = ["South", "East", "North", "West"][direction]
+					rejection_reason = "Tile %d requires %s boundary, but pos %s not at edge" % [tile_id, direction_name, pos]
+					break
+		
+		if can_place:
+			boundary_filtered_tiles[tile_id] = valid_tiles[tile_id]
+		else:
+			boundary_rejections += 1
+			# Only log first few rejections to avoid spam
+			if boundary_rejections <= 2:
+				pass
+				# Boundary rejection (only log if verbose debugging needed)
+				# print("BOUNDARY: " + rejection_reason)
+	
+	# Only log boundary filtering when there are many rejections  
+	if boundary_rejections > 5:
+		print("BOUNDARY: Filtered %d tiles at %s" % [boundary_rejections, pos])
+	
+	valid_tiles = boundary_filtered_tiles
+	
+	# Early contradiction detection - check if this position has no valid tiles
+	if valid_tiles.size() == 0 and tile_array[pos.y][pos.x] == 0:
+		print("⚠️ CONTRADICTION DETECTED: Position %s has no valid tiles after constraint propagation" % pos)
+		detected_contradictions.append(pos)
 	
 	# Update probability array
 	probability_array[pos.y][pos.x] = valid_tiles
@@ -682,6 +820,15 @@ func _is_valid_position(pos: Vector2i) -> bool:
 	"""Check if position is within map bounds"""
 	return pos.x >= 0 and pos.x < map_width and pos.y >= 0 and pos.y < map_height
 
+func _is_at_edge(pos: Vector2i, direction: TilesetData.Direction) -> bool:
+	"""Check if position is at the specified map edge"""
+	match direction:
+		TilesetData.Direction.NORTH: return pos.y == 0  # Top edge
+		TilesetData.Direction.SOUTH: return pos.y == map_height - 1  # Bottom edge
+		TilesetData.Direction.EAST: return pos.x == map_width - 1  # Right edge
+		TilesetData.Direction.WEST: return pos.x == 0  # Left edge
+		_: return false
+
 func get_stats() -> Dictionary:
 	"""Get generation statistics"""
 	return {
@@ -692,5 +839,73 @@ func get_stats() -> Dictionary:
 		"completion_percentage": get_completion_percentage(),
 		"lowest_entropy": lowest_entropy,
 		"propagation_waves": propagation_waves,
-		"entropy_calculations": entropy_calculations
+		"entropy_calculations": entropy_calculations,
+		"backtrack_depth": backtrack_depth,
+		"placement_history_size": placement_history.size()
 	}
+
+func _attempt_backtrack() -> bool:
+	"""
+	Attempt to backtrack when a contradiction is found
+	Returns true if backtracking was successful, false if we should give up
+	"""
+	print("\n🔄 BACKTRACK START: Attempt %d/%d" % [backtrack_depth + 1, max_backtrack_attempts])
+	print("   History size: %d placements" % placement_history.size())
+	
+	if placement_history.size() == 0:
+		print("❌ BACKTRACK FAIL: No placement history available")
+		return false
+	
+	if backtrack_depth >= max_backtrack_attempts:
+		print("❌ BACKTRACK FAIL: Maximum attempts (%d) reached" % max_backtrack_attempts)
+		return false
+	
+	backtrack_depth += 1
+	
+	# Look for a placement we can undo and retry with different tile
+	for i in range(placement_history.size() - 1, -1, -1):
+		var history_entry = placement_history[i]
+		var pos = history_entry.position
+		var rejected_tile = history_entry.tile_id
+		
+		# Restore state to before this placement
+		_restore_state(history_entry)
+		
+		# Remove placements back to this point
+		placement_history.resize(i)
+		
+		# Get possible tiles at this position, excluding the one that led to contradiction
+		var possible_tiles = _get_possible_tiles(pos)
+		possible_tiles.erase(rejected_tile)
+		
+		if possible_tiles.size() > 0:
+			# We found an alternative! Mark this tile as impossible and continue
+			_set_tile_possible(pos, rejected_tile, false)
+			print("✅ BACKTRACK SUCCESS: At %s, removed tile %d, trying %d alternatives" % [pos, rejected_tile, possible_tiles.size()])
+			return true
+	
+	print("❌ BACKTRACK EXHAUSTED: No alternatives found in %d placements" % placement_history.size())
+	return false
+
+func _restore_state(history_entry: Dictionary):
+	"""Restore WFC state from a history entry"""
+	var pos = history_entry.position
+	
+	# Restore tile array
+	tile_array[pos.y][pos.x] = 0
+	
+	# Restore possibility array  
+	possibility_array = history_entry.previous_possibilities
+	
+	# Restore undecided positions
+	undecided_positions = history_entry.previous_undecided
+	
+	# Restore counters
+	completed_tiles = history_entry.previous_completed_tiles
+	
+	# Mark entropy as dirty for all positions (since we restored possibilities)
+	for y in range(map_height):
+		for x in range(map_width):
+			_mark_entropy_dirty(Vector2i(x, y))
+	
+	print("🔙 RESTORED: State to before placing tile at %s (completed: %d)" % [pos, completed_tiles])
